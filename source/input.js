@@ -49,7 +49,7 @@ title.style.display = 'none';
 //ENDDEBUG
 
 function applyTitleStep(step) {
-  title.innerHTML = `404<p>${titleScript[step]}</p>`;
+  title.innerHTML = `<i>404</i><p>${titleScript[step]}</p>`;
 }
 applyTitleStep(0);
 

@@ -8,7 +8,6 @@ const  _7z = require('7zip')['7z']
 const path = require('path');
 
 
-const debugBuild = false;
 
 
 async function zip7(inputFilename, zipFilename) {
@@ -21,7 +20,7 @@ async function zip7(inputFilename, zipFilename) {
 
 
 
-async function buildCode() {
+async function buildCode( debugBuild ) {
   let source = {};
 
   let order = [
@@ -122,12 +121,12 @@ async function buildCode() {
   return js;
 }
 
-async function build() {
+async function build( debugBuild ) {
   let html = fs.readFileSync('source/index.html', 'utf8');
 
   let broken = false;
 
-  let code = await buildCode();
+  let code = await buildCode(debugBuild);
   if ( code ) {
     html = html.replace("{{SCRIPTCONTENTS}}", code.code);
     fs.writeFileSync('source/packed.js.map', code.map, 'utf8');
@@ -139,33 +138,38 @@ async function build() {
   let css = csso.minify(cssSource);
   html = html.replace("{{CSSCONTENTS}}", `<style>${css.css}</style>`);
 
+  let debugFile = path.join(__dirname, 'debug.html');
   let targetFile = path.join(__dirname, 'index.html');
   let targetZip = path.join(__dirname, '404CLUB.zip');
 
   if ( !broken ) {
-    fs.writeFileSync(targetFile, html, 'utf8');
-
-    let complete = () => {
-      let info = fs.statSync(targetZip);
-      let p = info.size / 13312 * 100;
-      let t = (new Date).toLocaleString();
-      let report = `${t} zip size: ${info.size}b / 13312b, ${p.toFixed(2)}%`;
-      console.log(report);
-      fs.appendFileSync('history.log', report + '\n');
-    }
-   
-    if ( process.platform == 'win32' ) {
-      await zip7(
-        path.normalize( targetFile ),
-        path.normalize( targetZip )
-      );
-      complete();
+    if ( debugBuild ) {
+      fs.writeFileSync(debugFile, html, 'utf8');
     } else {
-      gulp.src('index.html')
-      .pipe(zip('404CLUB.zip'))
-      .pipe(gulp.dest(__dirname))
-      .on('end', complete);
-    } 
+      fs.writeFileSync(targetFile, html, 'utf8');
+
+      let complete = () => {
+        let info = fs.statSync(targetZip);
+        let p = info.size / 13312 * 100;
+        let t = (new Date).toLocaleString();
+        let report = `${t} zip size: ${info.size}b / 13312b, ${p.toFixed(2)}%`;
+        console.log(report);
+        fs.appendFileSync('history.log', report + '\n');
+      }
+     
+      if ( process.platform == 'win32' ) {
+        await zip7(
+          path.normalize( targetFile ),
+          path.normalize( targetZip )
+        );
+        complete();
+      } else {
+        gulp.src('index.html')
+        .pipe(zip('404CLUB.zip'))
+        .pipe(gulp.dest(__dirname))
+        .on('end', complete);
+      } 
+    }
   }
 }
 
@@ -187,7 +191,8 @@ chokidar.watch('source').on('all', (event, path) => {
     return;
   }
   debounce = setTimeout( () => {
-    build();
+    build(true);
+    build(false);
     debounce = null;
   }, 200 );
 });

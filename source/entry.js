@@ -68,6 +68,13 @@ function run( person, time ) {
   instances[person.rightLowerArm].rot[0] = smoothstep(-1, 1, sin(t)) * 1.5;
 }
 
+
+
+
+
+
+
+
 function idle(person, time, dt) {
   time = time * 2;
 
@@ -100,8 +107,16 @@ function idle(person, time, dt) {
   instances[person.rightFoot].pos[0] = 1.5;
   instances[person.rightFoot].pos[1] = 0.5;
 
-  instances[person.leftFoot].rot[1] = -0.5;
+  instances[person.leftFoot].rot[1] = -0.9;
   instances[person.rightFoot].rot[1] = 0.3;
+
+  if ( instances[person.root].pos[2] < 4 && person.velocity[2] <= 0 ) {
+    instances[person.leftFoot].rot[0] += ( -PI2 - instances[person.leftFoot].rot[0] ) * 0.3;
+    instances[person.rightFoot].rot[0] += ( -PI2 - instances[person.rightFoot].rot[0] ) * 0.3;
+  } else {
+    instances[person.leftFoot].rot[0] += ( -PI - instances[person.leftFoot].rot[0] ) * 0.2;
+    instances[person.rightFoot].rot[0] += (-PI - instances[person.rightFoot].rot[0] ) * 0.2;
+  }
 
   let armAngle = PI + 0.5 + sin(time*2-0.6) * 0.1;
   instances[person.leftUpperArm].rot[0] = armAngle
