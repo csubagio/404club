@@ -130,10 +130,10 @@ async function build() {
   html = html.replace("{{CSSCONTENTS}}", `<style>${css.css}</style>`);
   
   if ( !broken ) {
-    fs.writeFileSync('source/site/index.html', html, 'utf8');
+    fs.writeFileSync('index.html', html, 'utf8');
 
     let complete = () => {
-      let info = fs.statSync('build/404CLUB.zip');
+      let info = fs.statSync('404CLUB.zip');
       let p = info.size / 13312 * 100;
       let t = (new Date).toLocaleString();
       let report = `${t} zip size: ${info.size}b / 13312b, ${p.toFixed(2)}%`;
@@ -143,14 +143,14 @@ async function build() {
    
     if ( process.platform == 'win32' ) {
       await zip7(
-        path.normalize( path.join( __dirname, 'source', 'site', '*' ) ),
-        path.normalize( path.join( __dirname, 'build', '404CLUB.zip' ) )
+        path.normalize( path.join( __dirname, 'index.html' ) ),
+        path.normalize( path.join( __dirname, '404CLUB.zip' ) )
       );
       complete();
     } else {
-      gulp.src('source/site/*')
+      gulp.src('index.html')
       .pipe(zip('404CLUB.zip'))
-      .pipe(gulp.dest('build'))
+      .pipe(gulp.dest(__dirname))
       .on('end', complete);
     } 
   }
