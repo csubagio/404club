@@ -26,6 +26,7 @@ async function buildCode() {
 
   let order = [
     'init.js',
+    'input.js',
     'math.js', 
     'material.js', 
     'geometry.js', 
@@ -35,6 +36,9 @@ async function buildCode() {
 
   for ( let i of order ) {
     source[i] = fs.readFileSync(`source/${i}`, 'utf8');
+    if ( !debugBuild ) {
+      source[i] = source[i].replace( /\/\/DEBUG[\s\S]*\/\/ENDDEBUG/g, '' );
+    }
   }
 
   var options = {
@@ -88,6 +92,12 @@ async function buildCode() {
       'rightLowerArm',
       'leftHand',
       'rightHand',
+      'keys',
+      'velocity',
+      'crouch',
+      'onGround',
+      'pelvisHeight',
+      'pelvisAdvance'
     ]
 
     for ( let i=0; i<propMangles.length; ++i ) {
@@ -128,12 +138,15 @@ async function build() {
   let cssSource = fs.readFileSync('source/main.css', 'utf8');
   let css = csso.minify(cssSource);
   html = html.replace("{{CSSCONTENTS}}", `<style>${css.css}</style>`);
-  
+
+  let targetFile = path.join(__dirname, 'index.html');
+  let targetZip = path.join(__dirname, '404CLUB.zip');
+
   if ( !broken ) {
-    fs.writeFileSync('index.html', html, 'utf8');
+    fs.writeFileSync(targetFile, html, 'utf8');
 
     let complete = () => {
-      let info = fs.statSync('404CLUB.zip');
+      let info = fs.statSync(targetZip);
       let p = info.size / 13312 * 100;
       let t = (new Date).toLocaleString();
       let report = `${t} zip size: ${info.size}b / 13312b, ${p.toFixed(2)}%`;
@@ -143,8 +156,8 @@ async function build() {
    
     if ( process.platform == 'win32' ) {
       await zip7(
-        path.normalize( path.join( __dirname, 'index.html' ) ),
-        path.normalize( path.join( __dirname, '404CLUB.zip' ) )
+        path.normalize( targetFile ),
+        path.normalize( targetZip )
       );
       complete();
     } else {

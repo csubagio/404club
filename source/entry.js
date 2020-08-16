@@ -3,10 +3,14 @@ let player1 = makePerson();
 limbColor = [0.4,1.0,0.5];
 let player2 = makePerson();
 
-mark1 = makeInstance(triangle, [0,0,0]);
-instances[mark1].clr = [1,0,0];
-mark2 = makeInstance(triangle, [0,5,0]);
-instances[mark2].clr = [0,1,0];
+instances[player1.root].pos[1] = -8;
+instances[player2.root].pos[1] = 8;
+
+player1.keys = { left: 'a', up: 'w', down: 's', right: 'd' };
+player2.keys = { left: 'ArrowLeft', up: 'ArrowUp', down: 'ArrowDown', right: 'ArrowRight' };
+
+mark1 = makeInstance(triangle, [0,leftWall,0], [0,0,0], [6,rightWall - leftWall,0]);
+instances[mark1].clr = [1,1,1];
 
 
 let time = 0;
@@ -22,9 +26,16 @@ let uploadMatrix = (n,v) => gl.uniformMatrix4fv(n, false, v);
 
 function calculateCamera(time) {
   projectionMatrix = perspective(rad(45), screenWidth/screenHeight, 0.1, 100);
-  cameraMatrix = m4_zRotation(time/4);
-  cameraMatrix = m4_translate(cameraMatrix, 22, 4, 9);
-  let cameraPosition = m4_extractPosition(cameraMatrix);
+  
+  let p1 = m4_extractPosition( instances[player1.root].mtx );
+  let p2 = m4_extractPosition( instances[player2.root].mtx );
+
+  cameraFocus = addScaledVectors( p1, 0.5, p2, 0.5 );
+  cameraFocus[2] += 6;
+
+  let distance = Math.max( 20, vectorLength( subtractVectors(p1, p2) ) * 1.0 );
+  let cameraPosition = [ cameraFocus[0] - distance, cameraFocus[1], cameraFocus[2] - 0.5 ];
+
   cameraMatrix = lookAt(cameraPosition, cameraFocus, up);
   // camera wants to look down negative z
   for ( let i=0; i<3; ++i ) {
@@ -57,13 +68,24 @@ function run( person, time ) {
   instances[person.rightLowerArm].rot[0] = smoothstep(-1, 1, sin(t)) * 1.5;
 }
 
-function idle(person, time) {
+function idle(person, time, dt) {
   time = time * 2;
+
+  if ( person.crouch ){
+    person.pelvisHeight += ( 2.7 - person.pelvisHeight ) * 0.2;
+    person.pelvisAdvance += ( -1 - person.pelvisAdvance ) * 0.2;
+  } else {
+    person.pelvisHeight += ( 5.2 - person.pelvisHeight ) * 0.2;
+    person.pelvisAdvance += ( 0 - person.pelvisAdvance ) * 0.2;
+  } 
+
+  instances[person.pelvis].pos[1] = person.pelvisAdvance;
+  
   // bob up and down
-  instances[person.pelvis].pos[2] = 5.2 + sin( time * 2 ) * 0.3;
+  instances[person.pelvis].pos[2] = person.pelvisHeight + sin( time * 2 ) * 0.3;
 
   // twist
-  instances[person.pelvis].rot[2] = 0.2 + sin( time + 0.7 ) * 0.1;
+  instances[person.pelvis].rot[2] = 0.5 + sin( time + 0.7 ) * 0.1;
   
   // sway
   instances[person.pelvis].pos[0] = cos( time + 0.3 + PI/2) * 0.4;
@@ -74,7 +96,7 @@ function idle(person, time) {
   instances[person.spine].rot[1] = -swayAngle;
 
   instances[person.leftFoot].pos[0] = -1.5;
-  instances[person.leftFoot].pos[1] = -1.5;
+  instances[person.leftFoot].pos[1] = -2;
   instances[person.rightFoot].pos[0] = 1.5;
   instances[person.rightFoot].pos[1] = 0.5;
 
@@ -89,30 +111,28 @@ function idle(person, time) {
   instances[person.rightUpperArm].rot[0] = armAngle;
   instances[person.rightUpperArm].rot[2] = -0.25;
   instances[person.rightLowerArm].rot[0] = rad(120);
+
+  if ( person.velocity[2] != 0 ) {
+    person.velocity[2] -= dt * 140;
+    instances[person.root].pos = addScaledVectors(
+      instances[person.root].pos, 1, person.velocity, dt
+    );
+    if ( instances[person.root].pos[2] < 0 ) {
+      instances[person.root].pos[2] = 0;
+      person.velocity = [0,0,0];
+    }
+  }
+
+  person.onGround = instances[person.root].pos[2] == 0;
+
+  let pos = instances[person.root].pos;
+  if ( pos[1] < leftWall ) { pos[1] = leftWall }
+  if ( pos[1] > rightWall ) { pos[1] = rightWall }
 }
 
 
-function applyIK( person, target ) {
-  // fixup each leg
-  let [x, y, z] = m4_extractDirections( instances[person.root].mtx );
-  let facing = addScaledVectors( x, -0.3, y, 1 );
-  solveIk(person.leftThigh, person.leftCalf, person.leftFoot, facing);
-  facing = addScaledVectors( x, 0.7, y, 1 );
-  solveIk(person.rightThigh, person.rightCalf, person.rightFoot, facing);
 
-  // point head at other head
-  instances[person.head].mtx = m4_multiply( 
-    m4_multiply( 
-      lookAt( 
-        m4_extractPosition(instances[person.head].mtx),
-        m4_extractPosition(instances[target.head].mtx),
-        up  
-      ),
-      m4_xRotation( -PI2 )
-    ),
-    m4_scaling.apply(null, instances[person.head].scl)
-  );
-}
+
 
 
 
@@ -125,7 +145,7 @@ tick = () => {
 
   calculateCamera(time);
 
-  gl.clearColor(0.0, 0.0, 0.2, 1.0);
+  gl.clearColor(0.1, 0.1, 0.15, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   gl.viewport(0, 0, screenWidth, screenHeight);
@@ -148,17 +168,23 @@ tick = () => {
   let t = 0;
   t = time * 1.5;
 
-  instances[player1.root].pos[1] = -6;
-
-  instances[player2.root].pos[1] = 6;
-  instances[player2.root].rot[2] = PI;
+  if ( instances[player1.root].pos[1] < instances[player2.root].pos[1] ) {
+    instances[player1.root].rot[2] = 0;
+    instances[player2.root].rot[2] = PI;
+  } else {
+    instances[player1.root].rot[2] = PI;
+    instances[player2.root].rot[2] = 0;
+  }
 
   //run(player1, t);
   //run(player2, t + 0.7);
 
+  applyInput(player1, dt);
+  applyInput(player2, dt);
+
   // update local transforms
-  idle(player1, t);
-  idle(player2, t);
+  idle(player1, t + 1.2, dt);
+  idle(player2, t, dt);
 
   // calculate hierarchies
   for ( let ins of instances ) {
@@ -189,6 +215,17 @@ tick = () => {
       gl.uniform3fv(baseMaterial.uniforms.clr, ins.clr)
       uploadMatrix(baseMaterial.uniforms.world, ins.mtx);
       gl.drawArrays(gl.TRIANGLES, 0, ins.geo.cnt);
+    }
+  }
+
+  if ( titleFade > 0 ) {
+    titleFade -= dt;
+    if ( titleFade > 0 ) {
+      let t = smoothstep( 0, 4.5, titleFade );
+      title.style.opacity = t;
+      title.style.transform = `translate(-50%,-50%) scale(${4-3*t})`
+    } else {
+      title.style.display = 'none';
     }
   }
 

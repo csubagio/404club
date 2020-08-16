@@ -98,6 +98,7 @@ function m4_extractDirections(m) {
 
 
 function m4_multiply(a, b) {
+  // less efficient, but smaller code size
   let res = [];
   for ( y=0; y<4; ++y ) {
     for ( x=0; x<4; ++x ) {
@@ -238,6 +239,9 @@ function m4_scale(m, sx, sy, sz) {
 }
 
 function m4_affine_inverse(m) {
+  // for camera, don't need the full inverse, this is 
+  // much smaller code. It's the affine transforms only
+  // version: invert the 3x3, multiply by the negative translate
   let res = m4_translation(0,0,0);
   for ( let y=0; y<3; ++y ) {
     for ( let x=0; x<3; ++x ) {

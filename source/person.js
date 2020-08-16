@@ -95,6 +95,36 @@ function makePerson(){
   p.leftHand = addLimb( p.leftLowerArm, [0,0,2], [1,0.5,1.0], [0,0,PI/2] );
   p.rightHand = addLimb( p.rightLowerArm, [0,0,2], [1,0.5,1.0], [0,0,PI/2] );
 
+  p.keys = {};
+
+  p.velocity = [0,0,0];
+
+  p.crouch = false;
+  p.onGround = true;
+  p.pelvisHeight = 5;
+  p.pelvisAdvance = 0;
+
   return p;
 }
 
+function applyIK( person, target ) {
+  // fixup each leg
+  let [x, y, z] = m4_extractDirections( instances[person.root].mtx );
+  let facing = addScaledVectors( x, -0.3, y, 1 );
+  solveIk(person.leftThigh, person.leftCalf, person.leftFoot, facing);
+  facing = addScaledVectors( x, 0.7, y, 1 );
+  solveIk(person.rightThigh, person.rightCalf, person.rightFoot, facing);
+
+  // point head at other head
+  instances[person.head].mtx = m4_multiply( 
+    m4_multiply( 
+      lookAt( 
+        m4_extractPosition(instances[person.head].mtx),
+        m4_extractPosition(instances[target.head].mtx),
+        up  
+      ),
+      m4_xRotation( -PI2 )
+    ),
+    m4_scaling.apply(null, instances[person.head].scl)
+  );
+}
