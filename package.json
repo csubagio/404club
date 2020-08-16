@@ -1,0 +1,19 @@
+{
+  "name": "404club",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "7zip": "0.0.6",
+    "chokidar": "^3.4.2",
+    "csso": "^4.0.3",
+    "gulp": "^4.0.2",
+    "gulp-zip": "^5.0.2",
+    "terser": "^5.1.0"
+  }
+}

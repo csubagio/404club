@@ -1,0 +1,1 @@
+print(bpy.data.objects["Empty"].location)

@@ -1,0 +1,16 @@
+0
+thighLeft: -0.50,0.00,6.00
+pelvis: 0.00,0.00,6.00
+thighRight: 0.50,0.00,6.00
+chest: 0.00,0.00,8.00
+head: 0.00,0.00,10.00
+upperArmLeft: -1.50,0.00,10.00
+lowerArmLeft: -1.50,0.00,7.50
+1
+thighLeft: -0.50,0.00,5.64
+pelvis: 0.00,0.00,5.64
+thighRight: 0.50,0.00,5.64
+chest: 0.00,0.43,7.60
+head: 0.00,0.63,9.59
+upperArmLeft: -1.50,0.63,9.59
+lowerArmLeft: -2.36,-0.30,7.43
