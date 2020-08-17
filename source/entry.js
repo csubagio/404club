@@ -102,6 +102,7 @@ function idle(person, time, dt) {
   // counter sway
   instances[person.spine].rot[1] = -swayAngle;
 
+  // place feet at 11 and 4 ish
   instances[person.leftFoot].pos[0] = -1.5;
   instances[person.leftFoot].pos[1] = -2;
   instances[person.rightFoot].pos[0] = 1.5;
@@ -110,6 +111,7 @@ function idle(person, time, dt) {
   instances[person.leftFoot].rot[1] = -0.9;
   instances[person.rightFoot].rot[1] = 0.3;
 
+  // point toes if jumping
   if ( instances[person.root].pos[2] < 4 && person.velocity[2] <= 0 ) {
     instances[person.leftFoot].rot[0] += ( -PI2 - instances[person.leftFoot].rot[0] ) * 0.3;
     instances[person.rightFoot].rot[0] += ( -PI2 - instances[person.rightFoot].rot[0] ) * 0.3;
@@ -118,6 +120,7 @@ function idle(person, time, dt) {
     instances[person.rightFoot].rot[0] += (-PI - instances[person.rightFoot].rot[0] ) * 0.2;
   }
 
+  // swing arms a bit
   let armAngle = PI + 0.5 + sin(time*2-0.6) * 0.1;
   instances[person.leftUpperArm].rot[0] = armAngle
   instances[person.leftUpperArm].rot[2] = 0.9;
@@ -127,6 +130,10 @@ function idle(person, time, dt) {
   instances[person.rightUpperArm].rot[2] = -0.25;
   instances[person.rightLowerArm].rot[0] = rad(120);
 
+  instances[person.leftHand].rot[1] = rad(30);
+  instances[person.rightHand].rot[1] = rad(-40);
+
+  // simulate physical movement, e.g. mid jump
   if ( person.velocity[2] != 0 ) {
     person.velocity[2] -= dt * 140;
     instances[person.root].pos = addScaledVectors(
@@ -138,8 +145,10 @@ function idle(person, time, dt) {
     }
   }
 
+  // keep track for inputs on whether we think we're grounded
   person.onGround = instances[person.root].pos[2] == 0;
 
+  // stay in bounds
   let pos = instances[person.root].pos;
   if ( pos[1] < leftWall ) { pos[1] = leftWall }
   if ( pos[1] > rightWall ) { pos[1] = rightWall }
@@ -241,8 +250,13 @@ tick = () => {
       title.style.transform = `translate(-50%,-50%) scale(${4-3*t})`
     } else {
       title.style.display = 'none';
+      //musicPlaying = true;
     }
   }
+
+  tickMusic(dt);
+
+  inputPressed = {};
 
   requestAnim(tick);
 }

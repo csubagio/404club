@@ -1,7 +1,11 @@
 
 
 let inputKeys = {};
+let inputPressed = {};
 document.body.addEventListener('keydown',(ev) => {
+  if ( !inputKeys[ev.key] ) {
+    inputPressed[ev.key] = true;
+  }
   inputKeys[ev.key] = true;
 });
 
@@ -38,6 +42,9 @@ title.addEventListener('click', () => {
   if ( titleStep >= 2 ) { return; }
   titleStep += 1;
   applyTitleStep(titleStep);
+  for ( let i=0; i<3; ++i ) {
+    setTimeout( kick, i * 300 );
+  }
   if ( titleStep >= 2 ) {
     titleFade = 6;
   }

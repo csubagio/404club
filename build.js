@@ -25,6 +25,7 @@ async function buildCode( debugBuild ) {
 
   let order = [
     'init.js',
+    'music.js',
     'input.js',
     'math.js', 
     'material.js', 
@@ -64,8 +65,9 @@ async function buildCode( debugBuild ) {
 
   if ( debugBuild ) {
     options.sourceMap = {
-      filename: 'packed.js',
-      url: '../packed.js.map'
+      filename: 'debug.js',
+      url: 'debug.js.map',
+      root: './source',
     }
   }
 
@@ -129,7 +131,9 @@ async function build( debugBuild ) {
   let code = await buildCode(debugBuild);
   if ( code ) {
     html = html.replace("{{SCRIPTCONTENTS}}", code.code);
-    fs.writeFileSync('source/packed.js.map', code.map, 'utf8');
+    if ( debugBuild ) {
+      fs.writeFileSync('debug.js.map', code.map, 'utf8');
+    }
   } else {
     broken = true;
   }
