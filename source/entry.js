@@ -242,16 +242,33 @@ tick = () => {
     }
   }
 
-  if ( titleFade > 0 ) {
-    titleFade -= dt;
+
+  if ( titleFade > 0 || titleBounce != 0 ) {
+
+    if( titleFade > 0 ) {
+      titleFade -= dt;
+    } 
+
+    let x = -50;
+    let y = -50;
+    titleVelocity += -titleBounce * 100 * dt;
+    titleVelocity *= 0.95;
+    titleBounce += titleVelocity * dt;
+    x -= sin(time) * titleBounce;
+    y += cos(time) * titleBounce;
+    let transform = `translate(${x.toFixed(3)}%,${y.toFixed(3)}%)`;
+    
     if ( titleFade > 0 ) {
       let t = smoothstep( 0, 4.5, titleFade );
       title.style.opacity = t;
-      title.style.transform = `translate(-50%,-50%) scale(${4-3*t})`
-    } else {
+      transform += ` scale(${4-3*t})`
+    } else if ( titleFade != -100 ) {
       title.style.display = 'none';
+      titleBounce = 0;
       //musicPlaying = true;
     }
+
+    title.style.transform = transform;
   }
 
   tickMusic(dt);

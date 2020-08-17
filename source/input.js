@@ -14,39 +14,57 @@ document.body.addEventListener('keyup',(ev) => {
 });
 
 const titleScript = [
+`everything is
+fine, nothing
+to see here
+(　＾∇＾)`,
+
 `what you're
 looking for
 doesn't exist
 ¯\\_(ツ)_/¯`,
 
+`please 
+go
+away
+( ⚆ _ ⚆ )`,
+
 `no seriously
 go away
 it's not safe
-( ﾟ▽ﾟ)/`,
+\\( ﾟ▽ﾟ)/`,
 
-`fine it's
-on your head
+`fine 
+it's on 
+your head
 ┌∩┐(ಠ_ಠ)┌∩┐`
 ]
 
 
-let titleFade = -1;
+let titleFade = -100;
 let title = document.querySelector('#t');
 let titleStep = 0;
 let titleClickTime = 0;
-title.addEventListener('click', () => {
+let titleBounce = 0;
+let titleVelocity = 0;
+title.addEventListener('click', (ev) => {
   let dt = ( new Date - titleClickTime );
   if ( dt < 1000 ) {
     return;
   }
-  if ( titleStep >= 2 ) { return; }
+  if ( titleStep >= titleScript.length - 1 ) { return; }
   titleStep += 1;
-  applyTitleStep(titleStep);
-  for ( let i=0; i<3; ++i ) {
-    setTimeout( kick, i * 300 );
+  let time = 0;
+  for ( let i=0; i<1 + titleStep; ++i ) {
+    setTimeout( kick, time );
+    time += (400-titleStep*60) + Math.random() * 80;
   }
-  if ( titleStep >= 2 ) {
-    titleFade = 6;
+  titleBounce = ( titleStep * 3 + Math.random() ) * 0.2; 
+  time += 500;
+  title.innerHTML = '<i>404</i><p>\n\n\n\n</p>';
+  setTimeout( () => {applyTitleStep(titleStep)}, time );
+  if ( titleStep >= titleScript.length - 1 ) {
+    titleFade = 8;
   }
   titleClickTime = new Date;
 });
