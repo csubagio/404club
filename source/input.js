@@ -1,4 +1,30 @@
 
+let synth = window.speechSynthesis;
+let speak = (text, voice) => {
+  if ( !synth ) {
+    return;
+  }
+
+  text = text.replace(/\s+/g, ' ');
+  text = text.replace(/[^a-zA-Z,.?! ]*/g, '');
+  let talk = new SpeechSynthesisUtterance(text);
+  let voiceId = 0;
+  let voices = synth.getVoices();
+  if ( !voices || voices.length == 0 ) {
+    return;
+  }
+  if ( voice ) { 
+    for ( let i=0; i<voices.length; ++i ) {
+      if ( voices[i].name.toLocaleLowerCase().indexOf(voice) >= 0 ) {
+        voiceId = i;
+        break;
+      }
+    }
+  }
+  talk.voice = voices[voiceId];
+  synth.speak(talk);
+}
+
 
 let inputKeys = {};
 let inputPressed = {};
@@ -14,29 +40,34 @@ document.body.addEventListener('keyup',(ev) => {
 });
 
 const titleScript = [
+`please
+do not 
+click
+`,
+
 `everything is
 fine, nothing
 to see here
 (　＾∇＾)`,
 
 `what you're
-looking for
+looking for,
 doesn't exist
 ¯\\_(ツ)_/¯`,
 
-`please 
-go
-away
+`please. 
+go.
+away.
 ( ⚆ _ ⚆ )`,
 
-`no seriously
-go away
+`no seriously,
+go away,
 it's not safe
 \\( ﾟ▽ﾟ)/`,
 
-`fine 
+`fine, 
 it's on 
-your head
+your head, then
 ┌∩┐(ಠ_ಠ)┌∩┐`
 ]
 
@@ -57,7 +88,7 @@ title.addEventListener('click', (ev) => {
   let time = 0;
   for ( let i=0; i<1 + titleStep; ++i ) {
     setTimeout( kick, time );
-    time += (400-titleStep*60) + Math.random() * 80;
+    time += (450-titleStep*50) + Math.random() * 100;
   }
   titleBounce = ( titleStep * 3 + Math.random() ) * 0.2; 
   time += 500;
@@ -70,10 +101,11 @@ title.addEventListener('click', (ev) => {
 });
 
 //DEBUG
-title.style.display = 'none';
+//title.style.display = 'none';
 //ENDDEBUG
 
 function applyTitleStep(step) {
+  speak( titleScript[step], 'uk' );
   title.innerHTML = `<i>404</i><p>${titleScript[step]}</p>`;
 }
 applyTitleStep(0);

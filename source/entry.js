@@ -266,6 +266,8 @@ tick = () => {
       title.style.display = 'none';
       titleBounce = 0;
       //musicPlaying = true;
+
+      speak( "The first rule of four oh four club, is you don't talk about four oh four club. Ready? FIGHT!", '日本' );
     }
 
     title.style.transform = transform;
