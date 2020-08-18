@@ -25,7 +25,8 @@ let cameraMatrix = [];
 let uploadMatrix = (n,v) => gl.uniformMatrix4fv(n, false, v);
 
 function calculateCamera(time) {
-  projectionMatrix = perspective(rad(45), screenWidth/screenHeight, 0.1, 100);
+  let aspect = 1.0 * screenWidth/screenHeight;
+  projectionMatrix = perspective(rad(60), aspect, 0.1, 300);
   
   let p1 = m4_extractPosition( instances[player1.root].mtx );
   let p2 = m4_extractPosition( instances[player2.root].mtx );
@@ -33,8 +34,8 @@ function calculateCamera(time) {
   cameraFocus = addScaledVectors( p1, 0.5, p2, 0.5 );
   cameraFocus[2] += 6;
 
-  let distance = Math.max( 20, vectorLength( subtractVectors(p1, p2) ) * 1.0 );
-  let cameraPosition = [ cameraFocus[0] - distance, cameraFocus[1], cameraFocus[2] - 0.5 ];
+  let distance = Math.max( 30, vectorLength( subtractVectors(p1, p2) ) * 1.4 );
+  let cameraPosition = [ cameraFocus[0] - distance, cameraFocus[1] * 0.8, cameraFocus[2] - 0.5 ];
 
   cameraMatrix = lookAt(cameraPosition, cameraFocus, up);
   // camera wants to look down negative z
@@ -92,7 +93,7 @@ function idle(person, time, dt) {
   instances[person.pelvis].pos[2] = person.pelvisHeight + sin( time * 2 ) * 0.3;
 
   // twist
-  instances[person.pelvis].rot[2] = 0.5 + sin( time + 0.7 ) * 0.1;
+  instances[person.pelvis].rot[2] = 1.0 + sin( time + 0.7 ) * 0.1;
   
   // sway
   instances[person.pelvis].pos[0] = cos( time + 0.3 + PI/2) * 0.4;

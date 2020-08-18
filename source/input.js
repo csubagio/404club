@@ -101,7 +101,7 @@ title.addEventListener('click', (ev) => {
 });
 
 //DEBUG
-//title.style.display = 'none';
+title.style.display = 'none';
 //ENDDEBUG
 
 function applyTitleStep(step) {

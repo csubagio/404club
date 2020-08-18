@@ -14,7 +14,7 @@ html, body, canvas {
   position:absolute;
   left:50%;
   top:50%;
-  font:50vh sans-serif;
+  font:min(50vh,50vw) sans-serif;
   transform:translate(-50%,-50%);
   background: #444;
   padding: 100vh;
@@ -31,7 +31,7 @@ i {
 }
 
 p {
-  font-size:5vh;
+  font-size:min(5vh,20vw);
 }
 
 #v {
