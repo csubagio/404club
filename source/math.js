@@ -10,6 +10,8 @@ let cos = Math.cos;
 let acos = Math.acos;
 let abs = Math.abs;
 let sqrt = Math.sqrt;
+let min = Math.min;
+let max = Math.max;
 
 function clamp(v, min, max) { 
   return Math.min( max, Math.max( min, v) );
@@ -24,12 +26,32 @@ function lerp(a, b, v) {
   return a + ( b - a ) * v;
 }
 
+function lerpVector(a, b, v)  {
+  res = [];
+  for ( let i=0; i<3; ++i ) {
+    res[i] = lerp(a[i], b[i], v);
+  }
+  return res;
+}
+
+function unitRandom() { 
+  return Math.random() * 2 - 1;
+}
+
 function addScaledVectors(a, as, b, bs) {
   return [a[0] * as + b[0] * bs, a[1] * as + b[1] * bs, a[2] * as + b[2] * bs];
 }
 
+function addVectors(a, b) {
+  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+}
+
 function subtractVectors(a, b) {
   return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+}
+
+function negate( a ) { 
+  return [-a[0], -a[1], -a[2]];
 }
 
 function vectorLength(v) {
@@ -52,6 +74,9 @@ function cross(a, b) {
           a[0] * b[1] - a[1] * b[0]];
 }
 
+function dot(a, b) {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
 
 function lookAt(from, to, up) {
   var zAxis = normalize(subtractVectors(to, from));
@@ -88,12 +113,27 @@ function m4_extractPosition(m) {
   return [ m[12], m[13], m[14] ];
 }
 
+function m4_setPosition(m, x, y, z) {
+  m[12] = x;
+  m[13] = y;
+  m[14] = z;
+}
+
 function m4_extractDirections(m) {
   return [ 
-    [ m[0], m[4], m[8] ],
-    [ m[1], m[5], m[9] ],
-    [ m[2], m[6], m[10] ]
+    [ m[0], m[1], m[2] ],
+    [ m[4], m[5], m[6] ],
+    [ m[8], m[9], m[10] ]
   ];
+}
+
+function m4_applyVector3(m, v) {
+  res = [
+    m[0] * v[0] + m[4] * v[1] + m[8] * v[2] + m[12],
+    m[1] * v[0] + m[5] * v[1] + m[9] * v[2] + m[13],
+    m[2] * v[0] + m[6] * v[1] + m[10] * v[2] + m[14]
+  ];
+  return res;
 }
 
 

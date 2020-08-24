@@ -1,3 +1,19 @@
+keysUp = 1;
+keysDown = 1 << 1;
+keysLeft = 1 << 2;
+keysRight = 1 << 3;
+keysPunch = 1 << 4;
+keysKick = 1 << 5;
+keysSpecial = 1 << 6;
+
+keysHeldUp = 1 << (10+0);
+keysHeldDown = 1 << (10+1);
+keysHeldLeft = 1 << (10+2);
+keysHeldRight = 1 << (10+3);
+keysHeldPunch = 1 << (10+4);
+keysHeldKick = 1 << (10+5);
+keysHeldSpecial = 1 << (10+6);
+
 
 let synth = window.speechSynthesis;
 let speak = (text, voice) => {
@@ -45,15 +61,15 @@ do not
 click
 `,
 
-`everything is
-fine, nothing
-to see here
-(　＾∇＾)`,
+//`everything is
+//fine, nothing
+//to see here
+//(　＾∇＾)`,
 
-`what you're
-looking for,
-doesn't exist
-¯\\_(ツ)_/¯`,
+//`what you're
+//looking for,
+//doesn't exist
+//¯\\_(ツ)_/¯`,
 
 `please. 
 go.
@@ -100,8 +116,40 @@ title.addEventListener('click', (ev) => {
   titleClickTime = new Date;
 });
 
+function tickTitle(time, dt) {
+  if ( titleFade > 0 || titleBounce != 0 ) {
+
+    if( titleFade > 0 ) {
+      titleFade -= dt;
+    } 
+
+    let x = -50;
+    let y = -50;
+    titleVelocity += -titleBounce * 100 * dt;
+    titleVelocity *= 0.95;
+    titleBounce += titleVelocity * dt;
+    x -= sin(time) * titleBounce;
+    y += cos(time) * titleBounce;
+    let transform = `translate(${x.toFixed(3)}%,${y.toFixed(3)}%)`;
+    
+    if ( titleFade > 0 ) {
+      let t = smoothstep( 0, 4.5, titleFade );
+      title.style.opacity = t;
+      transform += ` scale(${4-3*t})`
+    } else if ( titleFade != -100 ) {
+      title.style.display = 'none';
+      titleBounce = 0;
+      //musicPlaying = true;
+
+      speak( "The first rule of four oh four club, is you don't talk about four oh four club. Ready? FIGHT!", '日本' );
+    }
+
+    title.style.transform = transform;
+  }
+}
+
 //DEBUG
-title.style.display = 'none';
+//title.style.display = 'none';
 //ENDDEBUG
 
 function applyTitleStep(step) {
@@ -113,34 +161,28 @@ applyTitleStep(0);
 let leftWall = -30;
 let rightWall = 30;
 
+
 function applyInput( person, dt ) {
+  let input = 0;
+  previous = person.buffer[0];
+  let mapping = [0, 1, 2, 3, 4, 5, 6];
+  if ( !person.facingRight ) {
+    mapping = [0, 1, 3, 2, 4, 5, 6];
+  }
 
-  if ( !person.crouch ) {
-    let speed = 10;
-    if ( !person.onGround ) {
-      speed = 3;
+  for (let i=0; i<=6; ++i ) {
+    if ( inputKeys[person.keys[mapping[i]]] ) {
+      input |= 1 << (10+i);
     }
-    if ( inputKeys[person.keys.left] ) {
-      instances[person.root].pos[1] -= dt * speed;
-    }
-  
-    if ( inputKeys[person.keys.right] ) {
-      instances[person.root].pos[1] += dt * speed;
+    if ( inputPressed[person.keys[mapping[i]]] ) {
+      input |= 1 << i;
     }
   }
 
-  if ( inputKeys[person.keys.up] && person.onGround ) {
-    person.velocity[1] = 0;
-    person.velocity[2] = 60;
-    if ( inputKeys[person.keys.right] ) {
-      person.velocity[1] = 15;
-    } else if ( inputKeys[person.keys.left] ) {
-      person.velocity[1] = -15;
-    }
-  }
+  //input |= keysPunch;
 
-  person.crouch = false;
-  if ( inputKeys[person.keys.down] && person.onGround ) {
-    person.crouch = true;
-  }
+  person.buffer.unshift( input );
+  person.buffer.pop();
 }
+
+

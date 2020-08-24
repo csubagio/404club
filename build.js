@@ -30,14 +30,16 @@ async function buildCode( debugBuild ) {
     'math.js', 
     'material.js', 
     'geometry.js', 
+    'colliders.js',
     'person.js',
+    'states.js',
     'entry.js'
   ];
 
   for ( let i of order ) {
     source[i] = fs.readFileSync(`source/${i}`, 'utf8');
     if ( !debugBuild ) {
-      source[i] = source[i].replace( /\/\/DEBUG[\s\S]*\/\/ENDDEBUG/g, '' );
+      source[i] = source[i].replace( /\/\/DEBUG[\s\S]*?\/\/ENDDEBUG/g, ' ' );
     }
   }
 

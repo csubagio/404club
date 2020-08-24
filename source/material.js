@@ -15,8 +15,9 @@ const fragmentShaderSource =
 `precision mediump float;
 varying vec3 vnrm;
 uniform vec3 clr;
+uniform vec3 glow;
 void main() {
-  gl_FragColor=vec4(0,0,0,1);
+  gl_FragColor=vec4(0,0,0,0.2);
   vec3 nrm = vnrm;
   vec3 col = clr;
   if ( !gl_FrontFacing ) {nrm = -nrm;}
@@ -26,6 +27,7 @@ void main() {
   gl_FragColor.rgb += col * vec3(1.0,0.6,0.5) * i;
   i = max(0.0,dot(normalize(vec3(-1,0.2,-0.3)),nrm));
   gl_FragColor.rgb += col * vec3(0.3,0.4,0.5) * i;
+  gl_FragColor.rgb += glow;
 }
 `
 
@@ -67,4 +69,10 @@ function material(vertexSource, fragmentSource, attributeNames, uniformNames) {
   return { program, attributes, uniforms };
 }
 
-let baseMaterial = material( vertexShaderSource, fragmentShaderSource, ['pos','nrm'], ['proj','view','world','clr'] );
+function vectorAttribute(name, offset) {
+  let id = baseMaterial.attributes[name];
+  gl.vertexAttribPointer(id, 3, gl.FLOAT, false, 6*4, offset);
+  gl.enableVertexAttribArray(id);
+}
+
+let baseMaterial = material( vertexShaderSource, fragmentShaderSource, ['pos','nrm'], ['proj','view','world','clr','glow'] );

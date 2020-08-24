@@ -15,5 +15,7 @@ function windowResized() {
 window.onresize = windowResized;
 windowResized();
 
-let gl = canvas.getContext("webgl");
-
+let gl = canvas.getContext("webgl", {
+  antialising: true,
+  premultipliedAlpha: false
+});
